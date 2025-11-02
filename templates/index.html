@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Price Oracle - Predict Your Car's Resale Value</title>
+    <meta name="description" content="Accurately predict your car's resale value using our advanced machine learning model. Get instant predictions based on multiple parameters." />
+    <meta name="author" content="Car Price Oracle" />
+    
+    <style>
+        :root {
+            --car-blue: #3B82F6;
+            --car-dark-blue: #2563EB;
+            --car-black: #0F172A;
+            --car-silver: #94A3B8;
+            --car-red: #EF4444;
+            --car-green: #10B981;
+            --car-gray-100: #F1F5F9;
+            --car-gray-200: #E2E8F0;
+            --car-gray-300: #CBD5E1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--car-gray-100);
+            color: var(--car-black);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: var(--car-blue);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        header h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+        }
+        
+        main {
+            padding: 2rem 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        h2 {
+            color: var(--car-blue);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--car-gray-200);
+            padding-bottom: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--car-gray-300);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        button {
+            background-color: var(--car-blue);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: var(--car-dark-blue);
+        }
+        
+        .result {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background-color: var(--car-gray-100);
+            margin-top: 2rem;
+        }
+        
+        .price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--car-blue);
+            margin: 1rem 0;
+        }
+        
+        .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .detail-item {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .detail-label {
+            font-size: 0.875rem;
+            color: var(--car-silver);
+            margin-bottom: 0.25rem;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+        
+        .error {
+            background-color: var(--car-red);
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .model-info-link {
+            display: block;
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--car-blue);
+            text-decoration: none;
+        }
+        
+        .model-info-link:hover {
+            text-decoration: underline;
+        }
+        
+        footer {
+            background-color: var(--car-black);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 3rem;
+        }
+        
+        footer p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .footer-links a {
+            color: var(--car-gray-300);
+            text-decoration: none;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 10px;">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"></path>
+                    <circle cx="7" cy="17" r="2"></circle>
+                    <path d="M9 17h6"></path>
+                    <circle cx="17" cy="17" r="2"></circle>
+                </svg>
+                Car Price Oracle
+            </h1>
+            <p>Predict your car's resale value with machine learning</p>
+        </div>
+    </header>
+
+    <main class="container">
+        {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <h2>Car Details</h2>
+            <form action="/predict" method="post">
+                <div class="form-group">
+                    <label for="present_price">Current Market Price (in lakhs)</label>
+                    <input type="number" id="present_price" name="present_price" step="0.01" min="0" required value="{{ form_data.present_price if form_data else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="kms_driven">Kilometers Driven</label>
+                    <input type="number" id="kms_driven" name="kms_driven" min="0" required value="{{ form_data.kms_driven if form_data else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="fuel_type">Fuel Type</label>
+                    <select id="fuel_type" name="fuel_type" required>
+                        <option value="">-- Select Fuel Type --</option>
+                        <option value="PETROL" {% if form_data and form_data.fuel_type == 'PETROL' %}selected{% endif %}>Petrol</option>
+                        <option value="DIESEL" {% if form_data and form_data.fuel_type == 'DIESEL' %}selected{% endif %}>Diesel</option>
+                        <option value="CNG" {% if form_data and form_data.fuel_type == 'CNG' %}selected{% endif %}>CNG</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="seller_type">Seller Type</label>
+                    <select id="seller_type" name="seller_type" required>
+                        <option value="">-- Select Seller Type --</option>
+                        <option value="DEALER" {% if form_data and form_data.seller_type == 'DEALER' %}selected{% endif %}>Dealer</option>
+                        <option value="INDIVIDUAL" {% if form_data and form_data.seller_type == 'INDIVIDUAL' %}selected{% endif %}>Individual</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="transmission">Transmission</label>
+                    <select id="transmission" name="transmission" required>
+                        <option value="">-- Select Transmission --</option>
+                        <option value="MANUAL" {% if form_data and form_data.transmission == 'MANUAL' %}selected{% endif %}>Manual</option>
+                        <option value="AUTOMATIC" {% if form_data and form_data.transmission == 'AUTOMATIC' %}selected{% endif %}>Automatic</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="owner">Number of Previous Owners</label>
+                    <select id="owner" name="owner" required>
+                        <option value="0" {% if form_data and form_data.owner == 0 %}selected{% endif %}>0 (First Owner)</option>
+                        <option value="1" {% if form_data and form_data.owner == 1 %}selected{% endif %}>1 (Second Owner)</option>
+                        <option value="2" {% if form_data and form_data.owner == 2 %}selected{% endif %}>2 (Third Owner)</option>
+                        <option value="3" {% if form_data and form_data.owner == 3 %}selected{% endif %}>3+ (Fourth Owner or more)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="year">Year of Purchase</label>
+                    <input type="number" id="year" name="year" min="1990" max="2025" required value="{{ form_data.year if form_data else '' }}">
+                </div>
+
+                <button type="submit">Predict Price</button>
+            </form>
+        </div>
+
+        {% if prediction %}
+        <div class="card">
+            <h2>Predicted Resale Value</h2>
+            <div class="result">
+                <div class="price">₹{{ prediction }} lakhs</div>
+                <p>Based on the provided car details and our machine learning model</p>
+                
+                <div class="details">
+                    <div class="detail-item">
+                        <div class="detail-label">Current Price</div>
+                        <div class="detail-value">₹{{ form_data.present_price }} lakhs</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Kilometers</div>
+                        <div class="detail-value">{{ form_data.kms_driven }} km</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Fuel Type</div>
+                        <div class="detail-value">{{ form_data.fuel_type|title }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Seller Type</div>
+                        <div class="detail-value">{{ form_data.seller_type|title }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Transmission</div>
+                        <div class="detail-value">{{ form_data.transmission|title }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Previous Owners</div>
+                        <div class="detail-value">{{ form_data.owner }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Year of Purchase</div>
+                        <div class="detail-value">{{ form_data.year }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Car Age</div>
+                        <div class="detail-value">{{ 2025 - form_data.year }} years</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <a href="/model-info" class="model-info-link">Learn about our prediction model →</a>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Car Price Oracle. All rights reserved.</p>
+            <p>Powered by Machine Learning and Flask</p>
+            <div class="footer-links">
+                <a href="#">About</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

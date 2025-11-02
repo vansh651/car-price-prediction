@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Information - Car Price Oracle</title>
+    <meta name="description" content="Learn about the machine learning model behind Car Price Oracle's predictions" />
+    
+    <style>
+        :root {
+            --car-blue: #3B82F6;
+            --car-dark-blue: #2563EB;
+            --car-black: #0F172A;
+            --car-silver: #94A3B8;
+            --car-red: #EF4444;
+            --car-green: #10B981;
+            --car-gray-100: #F1F5F9;
+            --car-gray-200: #E2E8F0;
+            --car-gray-300: #CBD5E1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--car-gray-100);
+            color: var(--car-black);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: var(--car-blue);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        header h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+        }
+        
+        main {
+            padding: 2rem 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        h2 {
+            color: var(--car-blue);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--car-gray-200);
+            padding-bottom: 0.5rem;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+        }
+        
+        .feature-container {
+            margin-top: 2rem;
+        }
+        
+        .feature-item {
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-name {
+            font-weight: 600;
+        }
+        
+        .feature-percent {
+            color: var(--car-blue);
+            font-weight: 600;
+        }
+        
+        .feature-bar {
+            height: 12px;
+            background-color: var(--car-gray-200);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .feature-progress {
+            height: 100%;
+            background-color: var(--car-blue);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--car-blue);
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        footer {
+            background-color: var(--car-black);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 3rem;
+        }
+        
+        footer p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .footer-links a {
+            color: var(--car-gray-300);
+            text-decoration: none;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 10px;">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h2"></path>
+                    <circle cx="7" cy="17" r="2"></circle>
+                    <path d="M9 17h6"></path>
+                    <circle cx="17" cy="17" r="2"></circle>
+                </svg>
+                Car Price Oracle
+            </h1>
+            <p>Understanding Our Prediction Model</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h2>About the Model</h2>
+            <p>
+                Our car price prediction system uses a <strong>{{ model_type }}</strong> - a powerful machine learning algorithm 
+                that can capture complex patterns in data. This model was trained on a dataset of thousands of car listings 
+                with various features and their actual selling prices.
+            </p>
+            <p>
+                The model analyzes multiple factors including the car's current market price, kilometers driven, 
+                fuel type, seller type, transmission type, number of previous owners, and the car's age to predict 
+                the most accurate resale value.
+            </p>
+            
+            {% if message %}
+            <p>{{ message }}</p>
+            {% endif %}
+            
+            {% if feature_importance %}
+            <div class="feature-container">
+                <h3>Feature Importance</h3>
+                <p>
+                    The chart below shows how much each factor influences the final price prediction. 
+                    Higher percentages indicate stronger influence on the predicted price.
+                </p>
+                
+                {% for feature, importance in feature_importance %}
+                <div class="feature-item">
+                    <div class="feature-label">
+                        <span class="feature-name">{{ feature }}</span>
+                        <span class="feature-percent">{{ (importance * 100)|round(1) }}%</span>
+                    </div>
+                    <div class="feature-bar">
+                        <div class="feature-progress" style="width: {{ (importance * 100)|round(1) }}%;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <a href="/" class="back-link">← Back to Price Predictor</a>
+        </div>
+        
+        <div class="card">
+            <h2>Model Accuracy</h2>
+            <p>
+                Our model has been trained and tested on real-world car sales data. The model achieves 
+                high prediction accuracy for most typical car configurations.
+            </p>
+            <p>
+                However, please note that predictions are estimates based on historical data and market trends.
+                Actual selling prices may vary based on factors not captured by the model, such as:
+            </p>
+            <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                <li>Car condition (damage, wear and tear)</li>
+                <li>Special features or modifications</li>
+                <li>Local market conditions</li>
+                <li>Seasonal demand variations</li>
+                <li>Color and aesthetic preferences</li>
+            </ul>
+            <p>
+                We continuously improve our model with new data to provide the most accurate predictions possible.
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Car Price Oracle. All rights reserved.</p>
+            <p>Powered by Machine Learning and Flask</p>
+            <div class="footer-links">
+                <a href="#">About</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
