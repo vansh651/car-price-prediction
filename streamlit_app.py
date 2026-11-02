@@ -1,35 +1,11 @@
 
 import streamlit as st
 import numpy as np
-import joblib
-from pathlib import Path
-
-# Page configuration
-st.set_page_config(
-    page_title="Car Price Prediction",
-    page_icon="🚗",
-    layout="wide"
-)
-
-# Load trained model
-@st.cache_resource
-def load_model():
-    model_path = Path(__file__).parent / "model.sav"
-    return joblib.load(model_path)
-
-try:
-    model = load_model()
-except Exception as e:
-    st.error("Could not load model.sav")
-    st.exception(e)
-    st.stop()
-
-# Website design
-
-import streamlit as st
-import numpy as np
-import joblib
 import pandas as pd
+import joblib
+import plotly.express as px
+import plotly.graph_objects as go
+
 from pathlib import Path
 
 # =====================================================
@@ -43,25 +19,49 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+BASE_DIR = Path(__file__).parent
+
 # =====================================================
-# CUSTOM CSS
+# LOAD MODEL AND DATASET
+# =====================================================
+
+@st.cache_resource
+def load_model():
+    return joblib.load(BASE_DIR / "model.sav")
+
+
+@st.cache_data
+def load_dataset():
+    return pd.read_csv(BASE_DIR / "cars.csv")
+
+
+try:
+    model = load_model()
+    df = load_dataset()
+
+except Exception as e:
+    st.error("Unable to load the model or dataset.")
+    st.exception(e)
+    st.stop()
+
+
+# =====================================================
+# CUSTOM WEBSITE DESIGN
 # =====================================================
 
 st.markdown("""
 <style>
 
-/* Main website */
 .stApp {
     background-color: #f1f5f9;
     color: #172b4d;
 }
 
 .block-container {
-    padding: 0rem 1.5rem 2rem 1.5rem;
     max-width: 1500px;
+    padding: 1rem 2rem 3rem 2rem;
 }
 
-/* Hide Streamlit branding */
 #MainMenu {
     visibility: hidden;
 }
@@ -70,196 +70,144 @@ footer {
     visibility: hidden;
 }
 
-/* Hero section */
 .hero {
-    background: linear-gradient(120deg, #367ff0, #2864d9);
+    background: linear-gradient(120deg, #397df6, #245fd0);
     padding: 48px 20px;
     text-align: center;
-    border-radius: 0 0 15px 15px;
-    margin: 0 -1.5rem 25px -1.5rem;
-    color: white;
+    border-radius: 14px;
+    margin-bottom: 30px;
 }
 
 .hero h1 {
     color: white !important;
     font-size: 43px;
     font-weight: 800;
-    margin-bottom: 12px;
 }
 
 .hero p {
     color: white !important;
-    font-size: 21px;
-    margin: 0;
-}
-
-/* Section cards */
-.section-card {
-    background: white;
-    padding: 30px;
-    border-radius: 13px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.09);
-    margin-bottom: 25px;
+    font-size: 20px;
 }
 
 .section-title {
-    color: #397cf0;
+    color: #397df6;
     font-size: 30px;
     font-weight: 750;
-    border-bottom: 2px solid #e1e8f0;
+    border-bottom: 2px solid #dbe5f1;
     padding-bottom: 15px;
-    margin-bottom: 25px;
+    margin: 20px 0;
 }
 
-/* Form labels */
 .stApp label {
     color: #172b4d !important;
     font-weight: 600 !important;
 }
 
-/* Input fields */
 .stNumberInput input {
     background: white !important;
     color: #172b4d !important;
     border: 1px solid #ccd6e4 !important;
-    border-radius: 7px !important;
-    min-height: 48px;
+    border-radius: 8px !important;
 }
 
 div[data-baseweb="select"] > div {
     background: white !important;
     color: #172b4d !important;
-    border: 1px solid #ccd6e4 !important;
-    border-radius: 7px !important;
-    min-height: 48px;
+    border-radius: 8px !important;
 }
 
-/* Predict button */
 .stFormSubmitButton button {
-    background: #397cf0 !important;
+    background: #397df6 !important;
     color: white !important;
     border: none !important;
-    padding: 13px 30px !important;
-    border-radius: 7px !important;
+    padding: 12px 30px !important;
+    border-radius: 8px !important;
     font-weight: 700 !important;
-    font-size: 16px !important;
-    min-height: 48px;
-    transition: 0.2s;
 }
 
 .stFormSubmitButton button:hover {
-    background: #205fce !important;
+    background: #245fd0 !important;
 }
 
-/* Prediction section */
 .prediction-box {
-    background: #f0f5fc;
-    border-radius: 12px;
-    padding: 35px 20px;
+    background: white;
+    border-radius: 14px;
+    padding: 35px;
     text-align: center;
-    margin-top: 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+    margin: 20px 0;
 }
 
 .prediction-label {
-    color: #52647c;
+    color: #64748b;
     font-size: 18px;
 }
 
 .prediction-price {
-    color: #397cf0;
-    font-size: 49px;
+    color: #397df6;
+    font-size: 48px;
     font-weight: 800;
-    margin: 12px 0;
+    margin: 15px 0;
 }
 
 .prediction-description {
-    color: #334155;
-    font-size: 17px;
+    color: #475569;
+    font-size: 16px;
 }
 
-/* Result detail cards */
 .detail-card {
     background: white;
-    padding: 20px 10px;
-    border-radius: 10px;
+    padding: 22px 10px;
+    border-radius: 12px;
     text-align: center;
-    box-shadow: 0 2px 7px rgba(0,0,0,0.07);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     min-height: 105px;
-    margin-top: 12px;
+    margin-bottom: 12px;
 }
 
 .detail-label {
-    color: #8292a8;
+    color: #8493a8;
     font-size: 15px;
-    margin-bottom: 9px;
+    margin-bottom: 10px;
 }
 
 .detail-value {
-    color: #14243b;
+    color: #172b4d;
     font-size: 19px;
     font-weight: 700;
 }
 
-/* Footer */
+.analytics-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+}
+
 .custom-footer {
     background: #101a30;
     color: white;
     text-align: center;
     padding: 38px 15px;
-    margin: 35px -1.5rem -2rem -1.5rem;
+    border-radius: 12px;
+    margin-top: 45px;
 }
 
 .custom-footer p {
     color: white !important;
     font-size: 16px;
-    margin: 9px;
+    margin: 10px;
 }
 
-.custom-footer .footer-links {
-    color: #cbd5e1 !important;
-    font-size: 15px;
-    margin-top: 20px;
-}
-
-/* Mobile */
-@media(max-width: 768px) {
-    .hero h1 {
-        font-size: 30px;
-    }
-
-    .hero p {
-        font-size: 16px;
-    }
-
-    .prediction-price {
-        font-size: 35px;
-    }
-
-    .section-card {
-        padding: 18px;
-    }
+.footer-links {
+    color: #cbd5e1;
+    font-size: 14px;
+    margin-top: 18px;
 }
 
 </style>
 """, unsafe_allow_html=True)
-
-
-# =====================================================
-# LOAD TRAINED MACHINE LEARNING MODEL
-# =====================================================
-
-@st.cache_resource
-def load_model():
-    model_path = Path(__file__).parent / "model.sav"
-    return joblib.load(model_path)
-
-
-try:
-    model = load_model()
-except Exception as e:
-    st.error("Unable to load the trained model.")
-    st.exception(e)
-    st.stop()
 
 
 # =====================================================
@@ -275,12 +223,13 @@ st.markdown("""
 
 
 # =====================================================
-# CAR INPUT FORM
+# CAR PREDICTION FORM
 # =====================================================
 
-st.markdown("""
-<div class="section-title">Car Details</div>
-""", unsafe_allow_html=True)
+st.markdown(
+    '<div class="section-title">Enter Your Car Details</div>',
+    unsafe_allow_html=True
+)
 
 with st.form("car_prediction_form"):
 
@@ -340,11 +289,9 @@ with st.form("car_prediction_form"):
             step=1
         )
 
-        st.write("")
-
     submitted = st.form_submit_button(
         "🚗 Predict Price",
-        use_container_width=False
+        use_container_width=True
     )
 
 
@@ -354,7 +301,6 @@ with st.form("car_prediction_form"):
 
 if submitted:
 
-    # Encode categorical variables
     fuel_dict = {
         "Petrol": 0,
         "Diesel": 1,
@@ -371,11 +317,9 @@ if submitted:
         "Automatic": 1
     }
 
-    # Keep the same age convention used by the
-    # existing trained model and original application.
+    # Preserve the original model's age calculation
     age = 2025 - int(year)
 
-    # Model input
     features = np.array([[
         float(present_price),
         int(kms_driven),
@@ -390,13 +334,13 @@ if submitted:
 
         prediction = float(model.predict(features)[0])
 
-        st.markdown("""
-        <div class="section-title">
-            Predicted Resale Value
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            '<div class="section-title">Your Prediction</div>',
+            unsafe_allow_html=True
+        )
 
-        # Main prediction
+        st.success("Prediction generated successfully!")
+
         st.markdown(f"""
         <div class="prediction-box">
 
@@ -405,20 +349,19 @@ if submitted:
             </div>
 
             <div class="prediction-price">
-                ₹{prediction:.2f} lakhs
+                ₹{prediction:.2f} Lakhs
             </div>
 
             <div class="prediction-description">
-                Based on the provided car details and our
-                machine learning model
+                Based on your car details and our trained
+                machine learning model.
             </div>
 
         </div>
         """, unsafe_allow_html=True)
 
-        # Car information cards
         details = [
-            ("Current Price", f"₹{present_price:.2f} lakhs"),
+            ("Current Price", f"₹{present_price:.2f} Lakhs"),
             ("Kilometers", f"{kms_driven:,} km"),
             ("Fuel Type", fuel_type),
             ("Seller Type", seller_type),
@@ -427,8 +370,6 @@ if submitted:
             ("Year of Purchase", str(year)),
             ("Car Age", f"{age} years")
         ]
-
-        st.write("")
 
         for start in range(0, len(details), 4):
 
@@ -439,6 +380,7 @@ if submitted:
             ):
 
                 with col:
+
                     st.markdown(f"""
                     <div class="detail-card">
 
@@ -453,183 +395,418 @@ if submitted:
                     </div>
                     """, unsafe_allow_html=True)
 
-        st.write("")
-
         st.info(
-            "This prediction is an estimate generated by your "
-            "trained machine learning model. Actual selling "
-            "prices may vary."
+            "This is an estimated resale value. "
+            "Actual market prices may vary."
         )
 
     except Exception as e:
 
-        st.error("Unable to generate the prediction.")
+        st.error("Unable to generate prediction.")
         st.exception(e)
 
 
 # =====================================================
-# MACHINE LEARNING MODEL INFORMATION
+# ANALYTICS DASHBOARD
 # =====================================================
 
-with st.expander("📊 Learn About Our Prediction Model"):
+st.markdown("---")
 
-    st.subheader("How does Car Price Oracle work?")
+st.markdown("""
+<h1 style="text-align:center; color:#397df6;">
+    📊 Car Price Analytics Dashboard
+</h1>
+
+<p style="text-align:center; color:#64748b;">
+    Understand the factors affecting used car resale prices
+</p>
+""", unsafe_allow_html=True)
+
+
+# =====================================================
+# PREPARE DATA FOR ANALYTICS
+# =====================================================
+
+fuel_encoding = {
+    "Petrol": 0,
+    "Diesel": 1,
+    "CNG": 2
+}
+
+seller_encoding = {
+    "Dealer": 0,
+    "Individual": 1
+}
+
+transmission_encoding = {
+    "Manual": 0,
+    "Automatic": 1
+}
+
+feature_names = [
+    "Present Price",
+    "Kilometers Driven",
+    "Fuel Type",
+    "Seller Type",
+    "Transmission",
+    "Previous Owners",
+    "Car Age"
+]
+
+# Prepare dataset using the same encoding as prediction
+analytics_df = df.copy()
+
+analytics_df["Age"] = 2025 - analytics_df["Year"]
+
+analytics_df["Fuel_Type_Encoded"] = (
+    analytics_df["Fuel_Type"].map(fuel_encoding)
+)
+
+analytics_df["Seller_Type_Encoded"] = (
+    analytics_df["Seller_Type"].map(seller_encoding)
+)
+
+analytics_df["Transmission_Encoded"] = (
+    analytics_df["Transmission"].map(transmission_encoding)
+)
+
+model_features = pd.DataFrame({
+    "Present Price": analytics_df["Present_Price"],
+    "Kilometers Driven": analytics_df["Kms_Driven"],
+    "Fuel Type": analytics_df["Fuel_Type_Encoded"],
+    "Seller Type": analytics_df["Seller_Type_Encoded"],
+    "Transmission": analytics_df["Transmission_Encoded"],
+    "Previous Owners": analytics_df["Owner"],
+    "Car Age": analytics_df["Age"]
+})
+
+valid_rows = model_features.notna().all(axis=1)
+
+model_features = model_features.loc[valid_rows]
+actual_prices = analytics_df.loc[valid_rows, "Selling_Price"]
+
+# Generate predictions using the existing saved model
+try:
+    dataset_predictions = model.predict(model_features)
+
+    comparison_df = pd.DataFrame({
+        "Actual Price": actual_prices.to_numpy(),
+        "Predicted Price": dataset_predictions
+    })
+
+except Exception as e:
+    comparison_df = pd.DataFrame()
+    st.warning(f"Analytics predictions unavailable: {e}")
+
+
+# =====================================================
+# ANALYTICS TABS
+# =====================================================
+
+tab1, tab2, tab3 = st.tabs([
+    "📌 Feature Importance",
+    "🎯 Actual vs Predicted",
+    "📈 Price Distribution"
+])
+
+
+# =====================================================
+# GRAPH 1: FEATURE IMPORTANCE
+# =====================================================
+
+with tab1:
+
+    st.markdown("### Factors Affecting Car Prices")
+
+    estimator = model
+
+    if hasattr(model, "named_steps"):
+        estimator = model.steps[-1][1]
+
+    if hasattr(estimator, "feature_importances_"):
+
+        importance_df = pd.DataFrame({
+            "Feature": feature_names,
+            "Importance": estimator.feature_importances_
+        })
+
+        importance_df["Percentage"] = (
+            importance_df["Importance"] /
+            importance_df["Importance"].sum()
+        ) * 100
+
+        importance_df = importance_df.sort_values(
+            "Importance",
+            ascending=True
+        )
+
+        fig1 = px.bar(
+            importance_df,
+            x="Percentage",
+            y="Feature",
+            orientation="h",
+            text=importance_df["Percentage"].map(
+                lambda x: f"{x:.1f}%"
+            ),
+            color="Percentage",
+            color_continuous_scale=[
+                "#bfdbfe",
+                "#397df6",
+                "#1749a5"
+            ]
+        )
+
+        fig1.update_traces(
+            textposition="outside",
+            cliponaxis=False,
+            marker_line_width=0
+        )
+
+        fig1.update_layout(
+            template="plotly_white",
+            height=480,
+            xaxis_title="Feature Importance (%)",
+            yaxis_title="",
+            coloraxis_showscale=False,
+            showlegend=False,
+            margin=dict(l=25, r=65, t=30, b=35),
+            font=dict(
+                family="Arial",
+                size=13,
+                color="#172b4d"
+            )
+        )
+
+        st.plotly_chart(
+            fig1,
+            use_container_width=True
+        )
+
+        st.caption(
+            "Higher percentages indicate features that have "
+            "a greater influence on the Random Forest model."
+        )
+
+    else:
+
+        st.warning(
+            "Feature importance is not available for this model."
+        )
+
+
+# =====================================================
+# GRAPH 2: ACTUAL VS PREDICTED
+# =====================================================
+
+with tab2:
+
+    st.markdown("### Actual Price vs Model Predicted Price")
+
+    if not comparison_df.empty:
+
+        fig2 = go.Figure()
+
+        fig2.add_trace(go.Scatter(
+            x=comparison_df["Actual Price"],
+            y=comparison_df["Predicted Price"],
+            mode="markers",
+            name="Car Predictions",
+            marker=dict(
+                color="#397df6",
+                size=9,
+                opacity=0.65,
+                line=dict(
+                    color="white",
+                    width=1
+                )
+            ),
+            hovertemplate=(
+                "Actual: ₹%{x:.2f} Lakhs<br>"
+                "Predicted: ₹%{y:.2f} Lakhs"
+                "<extra></extra>"
+            )
+        ))
+
+        minimum = min(
+            comparison_df["Actual Price"].min(),
+            comparison_df["Predicted Price"].min()
+        )
+
+        maximum = max(
+            comparison_df["Actual Price"].max(),
+            comparison_df["Predicted Price"].max()
+        )
+
+        fig2.add_trace(go.Scatter(
+            x=[minimum, maximum],
+            y=[minimum, maximum],
+            mode="lines",
+            name="Perfect Prediction",
+            line=dict(
+                color="#ef4444",
+                width=2,
+                dash="dash"
+            )
+        ))
+
+        fig2.update_layout(
+            template="plotly_white",
+            height=480,
+            xaxis_title="Actual Selling Price (Lakhs)",
+            yaxis_title="Predicted Selling Price (Lakhs)",
+            hovermode="closest",
+            legend=dict(
+                orientation="h",
+                y=1.12,
+                x=0
+            ),
+            margin=dict(l=30, r=30, t=55, b=40),
+            font=dict(
+                family="Arial",
+                size=13,
+                color="#172b4d"
+            )
+        )
+
+        st.plotly_chart(
+            fig2,
+            use_container_width=True
+        )
+
+        st.caption(
+            "Each dot represents a dataset record. "
+            "Dots closer to the red dashed line indicate "
+            "closer predictions."
+        )
+
+        st.info(
+            "Note: This graph compares predictions on the "
+            "available dataset used for training. It is not "
+            "a separate held-out test-set evaluation."
+        )
+
+    else:
+
+        st.warning("Unable to generate the comparison graph.")
+
+
+# =====================================================
+# GRAPH 3: PRICE DISTRIBUTION
+# =====================================================
+
+with tab3:
+
+    st.markdown("### Distribution of Used Car Prices")
+
+    price_df = df.dropna(subset=["Selling_Price"])
+
+    fig3 = px.histogram(
+        price_df,
+        x="Selling_Price",
+        nbins=30,
+        color_discrete_sequence=["#397df6"],
+        labels={
+            "Selling_Price": "Selling Price (Lakhs)",
+            "count": "Number of Vehicles"
+        }
+    )
+
+    fig3.update_traces(
+        marker_line_color="white",
+        marker_line_width=1,
+        hovertemplate=(
+            "Price: ₹%{x:.2f} Lakhs<br>"
+            "Number of Vehicles: %{y}"
+            "<extra></extra>"
+        )
+    )
+
+    fig3.update_layout(
+        template="plotly_white",
+        height=480,
+        xaxis_title="Selling Price (Lakhs)",
+        yaxis_title="Number of Vehicles",
+        showlegend=False,
+        bargap=0.08,
+        margin=dict(l=30, r=30, t=30, b=40),
+        font=dict(
+            family="Arial",
+            size=13,
+            color="#172b4d"
+        )
+    )
+
+    st.plotly_chart(
+        fig3,
+        use_container_width=True
+    )
+
+    st.caption(
+        "This histogram shows how frequently different "
+        "resale price ranges occur in the dataset."
+    )
+
+
+# =====================================================
+# MODEL INFORMATION
+# =====================================================
+
+st.markdown("---")
+
+st.markdown("""
+<div class="section-title">
+    About Our Prediction Model
+</div>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+
+    st.markdown("### 🌳 Random Forest Regression")
 
     st.write("""
-    Car Price Oracle uses a trained Random Forest Regression
-    model to estimate the resale value of used cars.
+    Random Forest Regression is an ensemble machine learning
+    algorithm that combines multiple decision trees to
+    generate a final numerical prediction.
 
-    The model considers multiple factors, including:
+    Our model uses historical vehicle data to estimate
+    the resale price of used vehicles.
+    """)
 
-    - Present market price
+with col2:
+
+    st.markdown("### ⚙️ Model Features")
+
+    st.write("""
+    The prediction considers:
+
+    - Current market price
     - Kilometers driven
     - Fuel type
     - Seller type
     - Transmission
     - Previous owners
     - Vehicle age
-
-    The model analyzes these inputs and generates an estimated
-    resale price.
     """)
-
-    if hasattr(model, "feature_importances_"):
-
-        feature_names = [
-            "Present Price",
-            "Kilometers Driven",
-            "Fuel Type",
-            "Seller Type",
-            "Transmission",
-            "Previous Owners",
-            "Car Age"
-        ]
-
-        importance_df = pd.DataFrame({
-            "Feature": feature_names,
-            "Importance": model.feature_importances_
-        }).sort_values(
-            "Importance",
-            ascending=False
-        )
-
-        st.subheader("Feature Importance")
-
-        st.bar_chart(
-            importance_df.set_index("Feature")
-        )
-
 
 
 # =====================================================
 # FOOTER
 # =====================================================
 
-st.markdown(
-    """
-    <div class="custom-footer">
-        <p>© 2025 Car Price Oracle. All rights reserved.</p>
-        <p>Powered by Machine Learning and Streamlit</p>
-        <div class="footer-links">
-            Car Price Prediction | Random Forest Regression |
-            Machine Learning Project
-        </div>
+st.markdown("""
+<div class="custom-footer">
+
+    <p>© 2025 Car Price Oracle. All rights reserved.</p>
+
+    <p>Powered by Machine Learning and Streamlit</p>
+
+    <div class="footer-links">
+        Car Price Prediction |
+        Random Forest Regression |
+        Machine Learning Project
     </div>
-    """,
-    unsafe_allow_html=True
-)
 
-
-# Prediction
-if submitted:
-
-    fuel_dict = {
-        "Petrol": 0,
-        "Diesel": 1,
-        "CNG": 2
-    }
-
-    seller_dict = {
-        "Dealer": 0,
-        "Individual": 1
-    }
-
-    transmission_dict = {
-        "Manual": 0,
-        "Automatic": 1
-    }
-
-    age = 2025 - int(year)
-
-    features = np.array([[
-        present_price,
-        kms_driven,
-        fuel_dict[fuel_type],
-        seller_dict[seller_type],
-        transmission_dict[transmission],
-        owner,
-        age
-    ]])
-
-    try:
-        prediction = model.predict(features)[0]
-
-        st.divider()
-        st.header("Your Prediction")
-
-        st.success("Prediction generated successfully!")
-
-        st.metric(
-            "Estimated Resale Price",
-            f"₹ {prediction:.2f} Lakhs"
-        )
-
-        st.caption(
-            "This is an estimated price generated by your trained "
-            "machine learning model."
-        )
-
-    except Exception as e:
-        st.error("Prediction failed.")
-        st.exception(e)
-
-st.divider()
-
-st.subheader("About the Project")
-st.write("""
-This project uses a Random Forest Regression model to predict
-the resale price of used cars based on their features.
-
-The model considers present price, kilometres driven, fuel type,
-seller type, transmission, previous owners and vehicle age.
-""")
-
-if hasattr(model, "feature_importances_"):
-
-    st.subheader("Machine Learning Feature Importance")
-
-    import pandas as pd
-
-    names = [
-        "Present Price",
-        "Kms Driven",
-        "Fuel Type",
-        "Seller Type",
-        "Transmission",
-        "Owner",
-        "Age"
-    ]
-
-    importance = pd.DataFrame({
-        "Feature": names,
-        "Importance": model.feature_importances_
-    })
-
-    importance = importance.sort_values(
-        "Importance",
-        ascending=False
-    )
-
-    st.bar_chart(
-        importance.set_index("Feature")
-    )
+</div>
+""", unsafe_allow_html=True)
