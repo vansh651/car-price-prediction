@@ -520,28 +520,28 @@ with st.expander("📊 Learn About Our Prediction Model"):
         )
 
 
+
 # =====================================================
 # FOOTER
 # =====================================================
 
-st.markdown("""
-<div class="custom-footer">
-
-    <p>© 2025 Car Price Oracle. All rights reserved.</p>
-
-    <p>Powered by Machine Learning and Streamlit</p>
-
-    <div class="footer-links">
-        Car Price Prediction | Random Forest Regression |
-        Machine Learning Project
+st.markdown(
+    """
+    <div class="custom-footer">
+        <p>© 2025 Car Price Oracle. All rights reserved.</p>
+        <p>Powered by Machine Learning and Streamlit</p>
+        <div class="footer-links">
+            Car Price Prediction | Random Forest Regression |
+            Machine Learning Project
+        </div>
     </div>
-
-</div>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
 
 # Prediction
-if submit:
+if submitted:
 
     fuel_dict = {
         "Petrol": 0,
