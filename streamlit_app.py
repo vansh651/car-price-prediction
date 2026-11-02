@@ -25,7 +25,6 @@ except Exception as e:
     st.stop()
 
 # Website design
-s
 st.markdown("""
 <style>
 .stApp {
