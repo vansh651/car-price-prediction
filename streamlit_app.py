@@ -25,28 +25,51 @@ except Exception as e:
     st.stop()
 
 # Website design
+s
 st.markdown("""
 <style>
 .stApp {
-    background-color: #f4f7fb;
+    background-color: #f4f7fb !important;
+    color: #172b4d !important;
 }
-h1 {
-    color: #163b68;
+
+.stApp h1, .stApp h2, .stApp h3,
+.stApp p, .stApp label,
+.stApp span, .stApp div {
+    color: #172b4d;
 }
+
+.stApp h1 {
+    color: #123b70 !important;
+    font-weight: 800;
+}
+
+.stApp h2, .stApp h3 {
+    color: #174b82 !important;
+}
+
 div[data-testid="stMetric"] {
     background: white;
     padding: 20px;
     border-radius: 12px;
+    border: 1px solid #dce5ef;
+}
+
+div[data-baseweb="select"] > div,
+.stNumberInput input {
+    background-color: white !important;
+    color: #172b4d !important;
+}
+
+.stButton button, 
+.stFormSubmitButton button {
+    background-color: #1769aa !important;
+    color: white !important;
+    border-radius: 10px;
+    font-weight: bold;
 }
 </style>
 """, unsafe_allow_html=True)
-
-# Header
-st.title("🚗 Car Price Prediction")
-st.subheader("Predict the resale value of your used car")
-st.write("Enter your car details below to estimate its resale price.")
-
-st.divider()
 
 # Input form
 st.header("Enter Car Details")
